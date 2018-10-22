@@ -7,9 +7,12 @@ namespace JavascriptAndCssMinifier
 {
     class Program
     {
+        static bool _overwrite = false;
+
         static void Main(string[] args)
         {
             var loadingFolder = ConfigurationManager.AppSettings["folder"];
+            _overwrite = ConfigurationManager.AppSettings["overwrite"].ToLower() == "true" ? true : false;
             try
             {
                 if (Directory.Exists(loadingFolder))
@@ -52,20 +55,22 @@ namespace JavascriptAndCssMinifier
                         {
                             Console.WriteLine(file.Name);
                             var input = sr.ReadToEnd();
-                            Microsoft.Ajax.Utilities.Minifier minifier = new Microsoft.Ajax.Utilities.Minifier();
-                            var fileName = file.Name.Replace(file.Extension, $".min{file.Extension}");
-                            using (FileStream fsw = new FileStream($"{file.DirectoryName}/{fileName}", FileMode.Create))
+                            var fileName = _overwrite ? file.Name : file.Name.Replace(file.Extension, $".min{file.Extension}");
+                            if (_overwrite)
                             {
-                                using (StreamWriter sw = new StreamWriter(fsw))
+                                using (StreamWriter sw = new StreamWriter(fs))
                                 {
-                                    switch (file.Extension.ToLower())
+                                    fs.SetLength(0);
+                                    SetContent(file.Extension, input, sw);
+                                }
+                            }
+                            else
+                            {
+                                using (FileStream fsw = new FileStream($"{file.DirectoryName}/{fileName}", FileMode.Create))
+                                {
+                                    using (StreamWriter sw = new StreamWriter(fsw))
                                     {
-                                        case ".js":
-                                            sw.Write(minifier.MinifyJavaScript(input));
-                                            break;
-                                        case ".css":
-                                            sw.Write(minifier.MinifyStyleSheet(input));
-                                            break;
+                                        SetContent(file.Extension, input, sw);
                                     }
                                 }
                             }
@@ -73,6 +78,27 @@ namespace JavascriptAndCssMinifier
                     }
                 }
                 Console.WriteLine($"Loading：{baseDir.FullName} Done!");
+            }
+        }
+
+        /// <summary>
+        /// Set File Content
+        /// </summary>
+        /// <param name="extension">file extension</param>
+        /// <param name="input">input content</param>
+        /// <param name="sw">StreamWriter</param>
+        private static void SetContent(string extension, string input, StreamWriter sw)
+        {
+            Microsoft.Ajax.Utilities.Minifier minifier = new Microsoft.Ajax.Utilities.Minifier();
+
+            switch (extension.ToLower())
+            {
+                case ".js":
+                    sw.Write(minifier.MinifyJavaScript(input));
+                    break;
+                case ".css":
+                    sw.Write(minifier.MinifyStyleSheet(input));
+                    break;
             }
         }
     }
