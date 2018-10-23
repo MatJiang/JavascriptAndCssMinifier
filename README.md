@@ -1,0 +1,14 @@
+# JavascriptAndCssMinifier
+使用微軟AjaxMin進行資料夾下js、css檔案mini化
+
+Visual Studio可於建置發佈時設置將js及css檔案做minify，使用的套件為AjaxMin
+
+本程式為將package內dll抽出，並於config內設定資料夾路徑
+
+Console Application內
+
+動作為參考AjaxMin，使用其API進行minify
+
+遞迴遍尋資料夾，針對css及js檔案產生.min檔案
+
+並可於config檔內設置不產生min檔，動作更改為覆蓋原檔案
